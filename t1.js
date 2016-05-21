@@ -10,7 +10,7 @@ var data = [
     1, 0, 1, 0, 0, 0, 0, 0, 0, 1,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ];
-
+/*
 var data = [
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
     1, 0, 0, 0, 0, 1, 0, 0, 0, 1,
@@ -23,20 +23,15 @@ var data = [
     1, 0, 1, 0, 0, 0, 0, 0, 0, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 ];
-/*
+
 var data = [
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 1, 1, 1, 1,
+    1, 1, 0, 0, 1,
+    1, 0, 0, 0, 1,
+    1, 0, 1, 0, 1,
+    1, 1, 1, 1, 1,
 ];
-*/
+
 var data = [
     1, 1, 1, 1, 1,
     1, 0, 0, 0, 1,
@@ -45,6 +40,12 @@ var data = [
     1, 1, 1, 1, 1,
 ];
 
+var data = [
+    0,0,0,
+    0,0,0,
+    0,0,0,
+];
+*/
 var autoDetectRenderer = PIXI.autoDetectRenderer,
     Container = PIXI.Container,
     loader = PIXI.loader,
@@ -101,9 +102,9 @@ var map_starty = 0;
 
 // tiles
 var tile_size = 24;
-var block = 5;//
-var map_wtile = 5;//120;
-var map_htile = 5;//80;
+var block = 10;//
+var map_wtile = 120;
+var map_htile = 80;
 var map_w = map_wtile*tile_size;
 var map_h = map_htile*tile_size;
 var tiles = [];
@@ -238,7 +239,7 @@ function setup() {
         tick += 1;
         var time = new Date().getTime();
         var elapsed = time - lasttick;
-        if (elapsed >= 1000) {
+        if (elapsed >= 100) {
             var fps = tick/(time - lasttick)*1000;
             tick = 0;
             lasttick= time;
@@ -247,19 +248,19 @@ function setup() {
         if (!lasttime) elapsed = 0;
         else elapsed = time-lasttime;
         lasttime = time;
-        var distance = elapsed*0.001*speed;
+        var dist = elapsed*0.001*speed;
         var dir = player_dir();
         var x = map_playerx;
         var y = map_playery;
-        var dx = parseInt(dir.x * distance);
-        var dy = parseInt(dir.y * distance);
+        var dx = parseInt(dir.x * dist);
+        var dy = parseInt(dir.y * dist);
         
         if (check_colision(x+dx, y+dy, 8)) {
             if (check_colision(x+dx, y, 8)) {
                 if (check_colision(x, y+dy, 8)) {
                     dx = 0; dy=0;
-                } else dx = 0
-            } else dy=0
+                } else { dx = 0;}
+            } else { dy=0; }
         }
         if (dx!=0 || dy!=0) {
             change_pos(x+dx, y+dy);
@@ -272,11 +273,11 @@ function setup() {
         if (lx != lightx || ly != lighty) {
             lightx = lx;
             lighty = ly;
-            lines = los(lightx, lighty, tiles, map_wtile, map_htile, 40);
+            lines = los(lightx, lighty, tiles, map_wtile, map_htile, 14);
         }
         if (lines) {
-            los_draw_lines();
-            //los_draw();
+            los_draw();
+            //los_draw_lines();
         }
         sprites.removeChildren();
 
@@ -337,7 +338,6 @@ function setup() {
 function los_draw_lines() {
     light.clear()
     light.lineStyle(1, 0xffd900, 1);
-    light.beginFill(0xFF3300);
     for (var i=0; i<lines.length; ++i) {
         var one = lines[i];
         light.moveTo(one.x1*tile_size-map_startx, 
@@ -345,25 +345,20 @@ function los_draw_lines() {
         light.lineTo(one.x2*tile_size-map_startx, 
                      one.y2*tile_size-map_starty);
     }
-    light.endFill();
 }
 
 function los_draw() {
     light.clear()
-    light.lineStyle(1, 0xffd900, 1);
-    light.beginFill(0xFF3300);
+    //light.lineStyle(1, 0xffd900, 0.5);
+    light.beginFill(0x000000, 0.3);
     var one = lines[0];
     light.moveTo(one.x1*tile_size-map_startx, 
                  one.y1*tile_size-map_starty);
-    for (var i=1; i<lines.length; ++i) {
+    for (var i=0; i<lines.length; ++i) {
         var one = lines[i];
         light.lineTo(one.x2*tile_size-map_startx, 
                      one.y2*tile_size-map_starty);
     }
-    var one = lines[0];
-    light.lineTo(one.x1*tile_size-map_startx, 
-                 one.y1*tile_size-map_starty);
-
     light.endFill();
 }
 
@@ -383,7 +378,7 @@ function los(lightx, lighty, tiles, w,h,range) {
     for (var y=starty; y<endy; ++y) {
         for (var x=startx; x<endx; ++x) {
             var i = y*map_wtile + x;
-            if (tiles[i].block) {
+            if (tiles[i].block) {//} || x==startx || x==(endx-1) || y==starty || y==(endy-1)) {
                 if (lightx > x) { // right
                     var near = tiles[i+1];
                     if (!near.block) {
@@ -410,13 +405,50 @@ function los(lightx, lighty, tiles, w,h,range) {
         }
     }
 
+    var y = starty;
+    for (var x=startx; x<endx; ++x) {
+        var i = y*map_wtile + x;
+        if (!tiles[i].block) {
+            lines.push({x1:x+1, x2:x, y1:y, y2:y})
+        }
+    }
+
+    var y = endy-1;
+    for (var x=startx; x<endx; ++x) {
+        var i = y*map_wtile + x;
+        if (!tiles[i].block) {
+            lines.push({x1:x, x2:x+1, y1:y+1, y2:y+1})
+        }
+    }
+
+    var x = startx;
+    for (var y=starty; y<endy; ++y) {
+        var i = y*map_wtile + x;
+        if (!tiles[i].block) {
+            lines.push({x1:x, x2:x, y1:y, y2:y+1})
+        }
+    }
+
+    var x = endx-1;
+    for (var y=starty; y<endy; ++y) {
+        var i = y*map_wtile + x;
+        if (!tiles[i].block) {
+            lines.push({x1:x+1, x2:x+1, y1:y+1, y2:y})
+        }
+    }
+
+    //console.log(lines.length);
+    //for (var i=0; i<lines.length; ++i) {
+    //    var v = lines[i];
+    //    console.log(v.x1+"~"+v.x2+" "+v.y1+"~"+v.y2+" "+v.distance);
+    //}
     // face line distance
-    var lx = lightx*tile_size + tile_size>>1;
-    var ly = lighty*tile_size + tile_size>>1;
+    var lx = (lightx*tile_size) + (tile_size>>1);
+    var ly = (lighty*tile_size) + (tile_size>>1);
     for (var i=0; i<lines.length; ++i) {
         var v = lines[i];
-        var cx = ((v.x2-v.x1)*tile_size)>>1 + v.x1*tile_size;
-        var cy = ((v.y2-v.y1)*tile_size)>>1 + v.y1*tile_size;
+        var cx = (((v.x2-v.x1)*tile_size)>>1) + (v.x1*tile_size);
+        var cy = (((v.y2-v.y1)*tile_size)>>1) + (v.y1*tile_size);
         v.distance = (cx-lx)*(cx-lx) + (cy-ly)*(cy-ly)
     }
     
@@ -446,7 +478,14 @@ function los(lightx, lighty, tiles, w,h,range) {
         return l1.distance - l2.distance;
     })
 
+    //console.log(lines.length);
+    //for (var i=0; i<lines.length; ++i) {
+    //    var v = lines[i];
+    //    console.log(v.x1+"~"+v.x2+" "+v.y1+"~"+v.y2+" "+v.distance);
+    //}
+
     // 
+    var rays = [];
     for (var i=0; i<lines.length; ++i) {
         var v = lines[i];
         if (!v.next) {
@@ -464,6 +503,7 @@ function los(lightx, lighty, tiles, w,h,range) {
                         v2.x1 = x;
                         v2.y1 = y;
                         v2.prev = lnew;
+                        rays.push(lnew);
                         break;
                     }
                 }
@@ -484,6 +524,7 @@ function los(lightx, lighty, tiles, w,h,range) {
                         v2.x2 = x;
                         v2.y2 = y;
                         v2.next = lnew;
+                        rays.push(lnew);
                         break;
                     }
                 }
@@ -497,7 +538,7 @@ function los(lightx, lighty, tiles, w,h,range) {
         tmp.push(first);
         first.select = true
         var cur = first.next
-        //while (cur && (!cur.select)) {
+       // while (cur && (!cur.select)) {
         while (cur && cur != first) {
             tmp.push(cur)
             cur.select = true
@@ -505,11 +546,15 @@ function los(lightx, lighty, tiles, w,h,range) {
         }
         lines = tmp
     }
+   
     //console.log(lines.length);
     //for (var i=0; i<lines.length; ++i) {
     //    var v = lines[i];
-    //    console.log(v.x1+":"+v.y1+" "+v.x2+":"+v.y2);
+    //    console.log(v.x1+"~"+v.x2+" "+v.y1+"~"+v.y2+" "+v.distance);
     //}
+    //for (var i=0; i<rays.length; ++i) {
+    //    lines.push(rays[i]);
+   // }
     return lines
 }
 
